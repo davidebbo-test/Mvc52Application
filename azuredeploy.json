@@ -1,0 +1,84 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "hostingPlanName": {
+      "type": "string"
+    },
+    "siteName": {
+      "type": "string"
+    },
+    "repoUrl": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-04-01",
+      "name": "[parameters('hostingPlanName')]",
+      "type": "Microsoft.Web/serverFarms",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "name": "[parameters('hostingPlanName')]",
+        "sku": "Free"
+      }
+    },
+    {
+      "apiVersion": "2015-04-01",
+      "name": "[parameters('siteName')]",
+      "type": "Microsoft.Web/Sites",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverFarms/', parameters('hostingPlanName'))]"
+      ],
+      "properties": {
+        "name": "[parameters('siteName')]",
+        "serverFarmId": "[parameters('hostingPlanName')]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2015-04-01",
+          "name": "web",
+          "type": "config",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+          ],
+          "properties": {
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot\\Mvc52Application"
+              }
+            ]
+          }
+        },
+        {
+          "apiVersion": "2015-04-01",
+          "name": "appsettings",
+          "type": "config",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
+          ],
+          "properties": {
+            "MONACO_EXTENSION_VERSION": "beta",
+            "SCM_REPOSITORY_PATH": "wwwroot"
+          }
+        },
+        {
+          "apiVersion": "2015-04-01",
+          "name": "web",
+          "type": "sourcecontrols",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]",
+            "[resourceId('Microsoft.Web/Sites/config', parameters('siteName'), 'web')]",
+            "[resourceId('Microsoft.Web/Sites/config', parameters('siteName'), 'appsettings')]"
+          ],
+          "properties": {
+            "RepoUrl": "[parameters('repoUrl')]",
+            "IsManualIntegration": true
+          }
+        }
+      ]
+    }
+  ]
+}
