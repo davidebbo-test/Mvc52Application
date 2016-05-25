@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using MyCoolLib;
 
 namespace Mvc52Application.Controllers
 {
@@ -21,8 +22,7 @@ namespace Mvc52Application.Controllers
 
         public ActionResult About()
         {
-            string foo = ConfigurationManager.AppSettings["foo"];
-            ViewBag.Message = String.Format("The value of setting foo is: '{0}'", foo);
+            ViewBag.Message = $"SayHello: {Hello.SayHello("David")}, Foo Appsetting: {ConfigurationManager.AppSettings["foo"]}";
 
             return View();
         }
